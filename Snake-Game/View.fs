@@ -59,21 +59,22 @@ let draw (state: GameState) =
                 let pos = { X = x; Y = y }
 
                 match pos with
-                // Wall positions - corners and edges
+                // Wall positions - corners 
                 | { X = 0; Y = 0 } -> printElement wallCornerTopLeft wallColor 
                 | { X = x; Y = 0 } when x = boardWidth - 1 -> printElement wallCornerTopRight wallColor 
                 | { X = 0; Y = y } when y = boardHeight - 1 -> printElement wallCornerBotLeft wallColor 
                 | { X = x; Y = y } when x = boardWidth - 1 && y = boardHeight - 1 -> printElement wallCornerBotRight wallColor 
+
+                // Wall positions - edges
                 | { X = 0 } -> printElement wallVertical wallColor 
                 | { X = x } when x = boardWidth - 1 -> printElement wallVertical wallColor 
                 | { Y = 0 } -> printElement wallHorizontal wallColor 
                 | { Y = y } when y = boardHeight - 1 -> printElement wallHorizontal wallColor 
 
                 // Game elements - snake head, body, and food
-                | pos when pos = snake.Head -> printElement snakeHead snakeHeadColor
-                | pos when List.contains pos snake.Body -> printElement snakeBody snakeBodyColor
-
-                | pos when pos = food -> printElement foodStuff foodColor
+                | _ when pos = snake.Head -> printElement snakeHead snakeHeadColor
+                | _ when List.contains pos snake.Body -> printElement snakeBody snakeBodyColor
+                | _ when pos = food -> printElement foodStuff foodColor
 
                 // Empty space
                 | _ -> printf " "
