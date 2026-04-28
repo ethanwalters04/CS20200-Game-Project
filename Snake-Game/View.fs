@@ -4,8 +4,32 @@ open System
 open Domain
 open Engine
 
+module Theme =
+    // Colors
+    let snakeHeadColor = ConsoleColor.Green
+    let snakeBodyColor = ConsoleColor.DarkGreen
+    let foodColor = ConsoleColor.Red
+    let wallColor = ConsoleColor.White
+    
+    // Characters
+    let snakeHead = '$'
+    let snakeBody = 'S'
+    let foodStuff = '@'
+    let wallCornerTopLeft = '/'
+    let wallCornerTopRight = '\\'
+    let wallCornerBotLeft = '\\'
+    let wallCornerBotRight = '/'
+    let wallVertical = '|'
+    let wallHorizontal = '-'
+
 let getCommand () : Command option =
     None // implement
+
+let printElement (c: char) (color: ConsoleColor) =
+    let originalColor = Console.ForegroundColor
+    Console.ForegroundColor <- color
+    printf "%c" c
+    Console.ForegroundColor <- originalColor
 
 let draw (state: GameState) =
     Console.SetCursorPosition(0, 0)
@@ -36,20 +60,21 @@ let draw (state: GameState) =
 
                 match pos with
                 // Wall positions - corners and edges
-                | { X = 0; Y = 0 } -> printf "/" // Top left corner
-                | { X = x; Y = 0 } when x = boardWidth - 1 -> printf "\\" // Top right corner
-                | { X = 0; Y = y } when y = boardHeight - 1 -> printf "\\" // Bottom left corner
-                | { X = x; Y = y } when x = boardWidth - 1 && y = boardHeight - 1 -> printf "/" // Bottom right corner
-                | { X = 0 } -> printf "|" // Left edge
-                | { X = x } when x = boardWidth - 1 -> printf "|" // Right edge
-                | { Y = 0 } -> printf "-" // Top edge
-                | { Y = y } when y = boardHeight - 1 -> printf "-" // Bottom edge
+                | { X = 0; Y = 0 } -> printElement wallCornerTopLeft wallColor 
+                | { X = x; Y = 0 } when x = boardWidth - 1 -> printElement wallCornerTopRight wallColor 
+                | { X = 0; Y = y } when y = boardHeight - 1 -> printElement wallCornerBotLeft wallColor 
+                | { X = x; Y = y } when x = boardWidth - 1 && y = boardHeight - 1 -> printElement wallCornerBotRight wallColor 
+                | { X = 0 } -> printElement wallVertical wallColor 
+                | { X = x } when x = boardWidth - 1 -> printElement wallVertical wallColor 
+                | { Y = 0 } -> printElement wallHorizontal wallColor 
+                | { Y = y } when y = boardHeight - 1 -> printElement wallHorizontal wallColor 
 
                 // Game elements - snake head, body, and food
-                | pos when pos = snake.Head -> printf "$"
-                | pos when List.contains pos snake.Body -> printf "S"
-                | pos when pos = food -> printf "@"
-                
+                | pos when pos = snake.Head -> printElement snakeHead snakeHeadColor
+                | pos when List.contains pos snake.Body -> printElement snakeBody snakeBodyColor
+
+                | pos when pos = food -> printElement foodStuff foodColor
+
                 // Empty space
                 | _ -> printf " "
 
