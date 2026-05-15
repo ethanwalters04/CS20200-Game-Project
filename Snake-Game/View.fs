@@ -124,8 +124,8 @@ let draw (state: GameState) =
             // Shift to next line after each row
             Console.WriteLine() 
 
+        // Under-board information:
         printfn "Current score: %d" score
-
         printf "Foods:  Normal ("
         printElement normalGoodFood normalGoodFoodColor
         printf ")  Special ("
