@@ -115,8 +115,8 @@ let draw (state: GameState) =
                 // Good Food
                 | _ when pos = goodFoodPos ->
                     match currentGoodFood with
-                    | Normal _ -> printElement normalGoodFood normalFoodColor
-                    | Special _ -> printElement specialGoodFood specialFoodColor
+                    | Normal _ -> printElement normalGoodFood normalGoodFoodColor
+                    | Special _ -> printElement specialGoodFood specialGoodFoodColor
 
                 // Empty space
                 | _ -> printElement ' ' boardBackgroundColor
