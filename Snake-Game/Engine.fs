@@ -7,7 +7,7 @@ let private rand = Random()
 
 // Generate random positions indefinitely
 let private randomPositions =
-    seq unfold (fun _ -> 
+    Seq.unfold (fun _ -> 
         let x = rand.Next(1, boardWidth - 1)
         let y = rand.Next(1, boardHeight - 1)
         let pos = { X = x; Y = y }
