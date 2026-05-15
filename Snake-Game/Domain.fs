@@ -29,14 +29,15 @@ type BadFood = {
 // The GameState type represents all possible states of the game, including the main menu, active gameplay, and game over screen
 type GameState =
     | MainMenu
-    | Playing of snake: Snake * currentFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: int * speedStep: int
-    | GameOver of finalScore: int
+    | Playing of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: int * speedStep: int
+    | GameOver of finalScore: int * tickDelay: int * speedStep: int
 
 // This command type represents all possible inputs to the game logic
 type Command =
     | Tick 
     | ChangeDir of Direction 
     | StartGame of delay: int * speedStep: int
+    | RestartGame
     | QuitGame
 
 // This interface allows a modular, replaceable rendering layer
