@@ -6,13 +6,13 @@ open Engine
 
 module Theme =
     // Colors
-    let boardBackgroundColor = ConsoleColor.DarkGray
+    let boardBackgroundColor = ConsoleColor.Black
     let snakeHeadColor = ConsoleColor.Green
     let snakeBodyColor = ConsoleColor.DarkGreen
     let normalGoodFoodColor = ConsoleColor.Red
     let specialGoodFoodColor = ConsoleColor.Yellow
-    let badFoodColor = ConsoleColor.Magenta
-    let wallColor = ConsoleColor.White
+    let badFoodColor = ConsoleColor.DarkBlue
+    let wallColor = ConsoleColor.Gray
     
     // Characters
     let snakeHead = '$'
@@ -125,6 +125,14 @@ let draw (state: GameState) =
             Console.WriteLine() 
 
         printfn "Current score: %d" score
+
+        printf "Foods:  Normal ("
+        printElement normalGoodFood normalGoodFoodColor
+        printf ")  Special ("
+        printElement specialGoodFood specialGoodFoodColor
+        printf ")  Danger ("
+        printElement badFood badFoodColor
+        printfn ")"
 
 // Makes this renderer conform to the IGameRenderer interface, making it a valid rendering layer for the game
 let consoleRenderer = 

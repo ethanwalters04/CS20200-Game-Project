@@ -6,9 +6,6 @@ let boardHeight = 15
 type Position = { X: int; Y: int }
 type Direction = Up | Down | Left | Right
 
-type Position = { X: int; Y: int }
-type Direction = Up | Down | Left | Right
-
 // The Snake type represents the snake's head position, body segments, and current movement direction. The head is a single position, while the body is a list of positions representing the segments following the head.
 type Snake = {
     Head: Position
