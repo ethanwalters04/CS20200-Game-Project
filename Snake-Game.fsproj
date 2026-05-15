@@ -6,10 +6,10 @@
   </PropertyGroup>
 
     <ItemGroup>
-    <Compile Include="Domain.fs" />
-    <Compile Include="Engine.fs" />
-    <Compile Include="View.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="./Snake-Game/Domain.fs" />
+    <Compile Include="./Snake-Game/Engine.fs" />
+    <Compile Include="./Snake-Game/View.fs" />
+    <Compile Include="./Snake-Game/Program.fs" />
     </ItemGroup>
 
 </Project>
