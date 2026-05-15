@@ -82,11 +82,11 @@ let draw (state: GameState) =
         printfn ""
         printfn "Press 'R' to return to the main menu."
         printfn ""
-    | Playing (snake, currentFood, badFoods, score, _, _) ->
+    | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
         printfn "Snake"
         
         // Extract the position of the good food regardless of its type
-        let goodFoodPos = match currentFood with | Normal p -> p | Special p -> p
+        let goodFoodPos = match currentGoodFood with | Normal p -> p | Special p -> p
 
         for y in 0 .. boardHeight - 1 do
             for x in 0 .. boardWidth - 1 do
@@ -115,13 +115,14 @@ let draw (state: GameState) =
                 // Good Food
                 | _ when pos = goodFoodPos ->
                     match currentGoodFood with
-                    | Normal _ -> printElement normalFood normalFoodColor
-                    | Special _ -> printElement specialFood specialFoodColor
+                    | Normal _ -> printElement normalGoodFood normalFoodColor
+                    | Special _ -> printElement specialGoodFood specialFoodColor
 
                 // Empty space
-                | _ -> printf " "
+                | _ -> printElement ' ' boardBackgroundColor
 
-            Console.WriteLine()
+            // Shift to next line after each row
+            Console.WriteLine() 
 
         printfn "Current score: %d" score
 
