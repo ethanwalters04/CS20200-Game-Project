@@ -14,7 +14,10 @@ let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
 
             let timeout =
                 match state with
-                | Playing (_, _, _, _, delay, _) -> delay
+                | Playing (snake, _, _, _, delay, _) -> 
+                    match snake.CurrentDir with
+                    | Up | Down -> delay + (delay / 2) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
+                    | Left | Right -> delay
                 | _ -> Timeout.Infinite
 
             let! msg = inbox.TryReceive(timeout) // Wait for a command or timeout for the next tick
