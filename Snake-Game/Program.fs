@@ -1,6 +1,7 @@
 module Program
 
 open System
+open System.Threading
 open Domain
 open Engine
 open View
@@ -44,7 +45,7 @@ let main _ =
         | Some cmd -> gameActor.Post cmd
         | None -> ()
 
-        Thread.Sleep(15) 
+        Thread.Sleep(15)
         inputLoop ()
     
     inputLoop ()
