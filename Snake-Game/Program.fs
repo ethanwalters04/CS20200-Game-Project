@@ -5,27 +5,35 @@ open Domain
 open Engine
 open View
 
+// Create the game as an actor that processes commands and updates the game state accordingly
+let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
+    MailboxProcessor.Start(fun inbox ->
+        let rec loop (state: GameState) = async {
+            renderer.Render state // Render the game according to its current state
+
+            let timeout =
+                match state with
+                | Playing (_, _, _, _, delay, _) -> delay
+                | _ -> Timeout.Infinite
+
+            let! msg = inbox.TryReceive(timeout) // Wait for a command or timeout for the next tick
+
+            let command =
+                match msg with
+                | Some cmd -> cmd
+                | None -> Tick
+
+            let nextState = Engine.update state command
+
+            return! loop nextState
+        }
+
+        loop initialState
+    )
+                
 [<EntryPoint>]
 let main _ = 
     Console.CursorVisible <- false
     Console.Clear()
     
-    // Testing
-    // ----------------
-    let fakeSnake = { 
-        Head = {X=15; Y=7} 
-        Body = [{X=15; Y=8}; {X=15; Y=9}; {X=15; Y=10}] 
-        CurrentDir = Up 
-    }
     
-    let fakeState = Playing (fakeSnake, {X=20; Y=5}, 999, 100)
-    
-    View.draw fakeState
-    
-    printfn "\nTest complete."
-    Console.ReadKey() |> ignore
-    // ----------------
-    
-    Console.CursorVisible <- true
-    Console.Clear()
-    0
