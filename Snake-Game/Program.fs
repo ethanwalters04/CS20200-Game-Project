@@ -36,4 +36,15 @@ let main _ =
     Console.CursorVisible <- false
     Console.Clear()
     
+    let renderer = consoleRenderer
+    let gameActor = createGameActor renderer MainMenu
+
+    let rec inputLoop () =
+        match renderer.GetCommand() with
+        | Some cmd -> gameActor.Post cmd
+        | None -> ()
+
+        Thread.Sleep(15) 
+        inputLoop ()
     
+    inputLoop ()
