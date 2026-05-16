@@ -34,6 +34,7 @@ type Command =
     | Tick 
     | ChangeDir of Direction 
     | StartGame of delay: int * speedStep: int
+    | ReturnToMainMenu
     | RestartGame
     | QuitGame
 

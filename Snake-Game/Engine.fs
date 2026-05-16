@@ -64,8 +64,9 @@ let update (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
     | MainMenu, StartGame (delay, speedStep) -> initGame (delay, speedStep)
     | GameOver (_, delay, speedStep), RestartGame -> initGame (delay, speedStep)
-    | Playing (_, _, _, _, delay, speedStep), RestartGame -> initGame (delay, speedStep)
-    | _, QuitGame -> state
+    | GameOver (_, delay, speedStep), ReturnToMainMenu -> MainMenu
+    | Playing (_, _, _, _, delay, speedStep), ReturnToMainMenu -> MainMenu
+    | _, QuitGame -> Environment.Exit(0); state
 
     | Playing (snake, food, badFoods, score, delay, step), ChangeDir newDir ->
         if isValidTurn snake.CurrentDir newDir then

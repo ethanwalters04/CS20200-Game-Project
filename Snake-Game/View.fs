@@ -45,6 +45,7 @@ let getCommand () : Command option =
         | ConsoleKey.D2 -> Some (StartGame (100, 5)) // Medium
         | ConsoleKey.D3 -> Some (StartGame (60, 8))  // Hard
         
+        | ConsoleKey.M -> Some ReturnToMainMenu
         | ConsoleKey.R -> Some RestartGame
         | ConsoleKey.Q -> Some QuitGame
         | _ -> None
@@ -64,9 +65,12 @@ let draw (state: GameState) =
     Console.SetCursorPosition(0, 0)
     match state with
     | MainMenu ->
+        Console.Clear()
         printfn ""
         printfn "~~~ Welcome to Snake! ~~~"
-        printfn "Your goal is to eat the food (red) and grow as long as possible."
+        printfn "Your goal is to eat the apples and bananas to grow as long as possible."
+        printfn "Apples give 10 points, while bananas give 50 points and clear all bad food from the board!"
+        printfn "Avoid the purple bad food - it will end the game if you eat it!"
         printfn "Use WASD to change direction. Press 'Q' to quit."
         printfn ""
         printfn "Select difficulty by pressing 1, 2, or 3:"
@@ -75,11 +79,12 @@ let draw (state: GameState) =
         printfn "3. Hard (fast movement)"
         printfn ""
     | GameOver (finalScore, _, _) ->
+        Console.Clear()
         printfn ""
         printfn "~~~ Game Over! ~~~"
         printfn "Your final score: %d" finalScore
         printfn ""
-        printfn "Press 'R' to return to the main menu."
+        printfn "Press 'M' to return to the main menu."
         printfn ""
     | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
         printfn "Snake"
