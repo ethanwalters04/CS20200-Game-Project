@@ -158,9 +158,25 @@ let private drawPlaying snake currentGoodFood badFoods score =
     printElement badFood badFoodColor
     printfn ")"
 
+let draw (state: GameState) =
+    Console.SetCursorPosition(0, 0)
+
+    match state with
+    | MainMenu ->
+        drawMainMenu ()
+
+    | GameOver (finalScore, _, _) ->
+        drawGameOver finalScore
+
+    | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
+        drawPlaying snake currentGoodFood badFoods score
+
+    | Quitting ->
+        ()
+
 // Makes this renderer conform to the IGameRenderer interface, making it a valid rendering layer for the game
-let consoleRenderer = 
+let consoleRenderer =
     { new IGameRenderer with
-        member this.Render(state) = draw state
-        member this.GetCommand() = getCommand ()
+        member _.Render(state) = draw state
+        member _.GetCommand() = getCommand ()
     }
