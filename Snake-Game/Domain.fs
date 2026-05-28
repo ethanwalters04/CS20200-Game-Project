@@ -28,6 +28,7 @@ type GameState =
     | MainMenu
     | Playing of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: int * speedStep: int
     | GameOver of finalScore: int * tickDelay: int * speedStep: int
+    | Quitting
 
 // This command type represents all possible inputs to the game logic
 type Command =

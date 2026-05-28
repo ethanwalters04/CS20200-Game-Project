@@ -66,13 +66,26 @@ let update (state: GameState) (cmd: Command) : GameState =
     | GameOver (_, delay, speedStep), RestartGame -> initGame (delay, speedStep)
     | GameOver (_, delay, speedStep), ReturnToMainMenu -> MainMenu
     | Playing (_, _, _, _, delay, speedStep), ReturnToMainMenu -> MainMenu
-    | _, QuitGame -> Environment.Exit(0); state
+    | _, QuitGame -> Quitting
 
+    // Process direction change commands (when playing)
     | Playing (snake, food, badFoods, score, delay, step), ChangeDir newDir ->
-        if isValidTurn snake.CurrentDir newDir then
-            Playing ({ snake with CurrentDir = newDir }, food, badFoods, score, delay, step)
+        // Get actual direction rather than relying on the snake.CurrentDir, which may be inaccurate if the player makes multiple turn commands between ticks
+        let actualDir = 
+            match snake.Body with
+            | [] -> snake.CurrentDir // If snake has no body
+            | neck :: _ -> 
+                // Compare the Head's pos to the neck's pos
+                if snake.Head.X > neck.X then Right
+                elif snake.Head.X < neck.X then Left
+                elif snake.Head.Y > neck.Y then Down
+                else Up
+        
+        if isValidTurn actualDir newDir then
+            let newSnake = { snake with CurrentDir = newDir }
+            Playing (newSnake, food, badFoods, score, delay, step)
         else
-            state
+            state // Invalid turn - ignore command and keep current state
     
     | Playing (snake, food, badFoods, score, delay, step), Tick ->
         let newHead = moveHead snake.Head snake.CurrentDir

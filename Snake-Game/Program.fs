@@ -30,10 +30,9 @@ let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
             let nextState = Engine.update state command
 
             match state, nextState with
-            
-            // Extra delay on game over to allow user to process what happened
             | Playing _, GameOver _ -> 
-                do! Async.Sleep(1500)
+                do! Async.Sleep(1500) // Extra delay on game over to allow user to process what happened
+            | _, Quitting -> Environment.Exit(0)
             | _ -> ()
 
             return! loop nextState
