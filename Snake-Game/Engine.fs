@@ -18,11 +18,16 @@ let private randomPositions =
 
 // Retrieve a random unoccupied position
 let safePosition (occupied: Position list) =
-    randomPositions
-    |> Seq.filter (fun pos -> not (List.contains pos occupied)) // Filters out occupied positions
-    |> Seq.head // Gets the first position of the filtered sequence
+    let maxSpaces = (boardWidth - 2) * (boardHeight - 2) // Get size of playable board area
 
-// Check if a position is out of bounds
+    if List.length occupied >= maxSpaces then
+        None // Board fully occupied - can't generate a safe position
+    else
+        randomPositions
+        |> Seq.filter (fun pos -> not (List.contains pos occupied)) // Filters out occupied positions
+        |> Seq.tryHead // Gets the first position of the filtered sequence
+
+    // Check if a position is out of bounds
 let isOutOfBounds (pos: Position) =
     pos.X <= 0 || pos.X >= boardWidth - 1 || pos.Y <= 0 || pos.Y >= boardHeight - 1
 
@@ -54,11 +59,18 @@ let private initGame (startDelay: int, speedStep: int) =
         CurrentDir = Up
     }
 
-    let initGoodFoodPos = safePosition (initSnake.Head :: initSnake.Body)
-    let isSpecial = rand.Next(1, 101) <= 20 // 20% chance of special food
-    let initGoodFood = if isSpecial then Special initGoodFoodPos else Normal initGoodFoodPos
+    match safePosition (initSnake.Head :: initSnake.Body) with
+    | Some initGoodFoodPos ->
 
-    Playing (initSnake, initGoodFood, [], 0, startDelay, speedStep)
+        let isSpecial = rand.Next(1,101) <= 20 // 20% chance of new food being special food
+        let initGoodFood =
+            if isSpecial then Special initGoodFoodPos
+            else Normal initGoodFoodPos
+
+        Playing (initSnake, initGoodFood, [], 0, startDelay, speedStep)
+
+    | None ->
+        GameOver (0, startDelay, speedStep) // Board full on initial spawn, e.g. if the playable area is too small, so end game immediately
 
 let update (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
@@ -107,25 +119,32 @@ let update (state: GameState) (cmd: Command) : GameState =
                         // Normal: +10 Points, Spawn 1 Bad Food
                         let badFoodPositions = List.map (fun bf -> bf.Pos) badFoods
                         let occupiedForBad = newSnake.Head :: newSnake.Body @ badFoodPositions
-                        let newBadFood = { Pos = safePosition occupiedForBad }
-                        (10, newBadFood :: badFoods)
+                        
+                        // Try to find a safe pos for new bad food or skip if full
+                        match safePosition occupiedForBad with
+                        | Some pos -> (10, { Pos = pos } :: badFoods)
+                        | None -> (10, badFoods)
                         
                     | Special _ -> 
                         // Special: +50 Points, Clear all Bad Foods
                         (50, [])
                     
                 let newScore = score + scoreIncrease
+                let newDelay = Math.Max(30, delay - step)
 
                 let newBadFoodPositions = List.map (fun bf -> bf.Pos) newBadFoods
                 let occupiedForGood = newSnake.Head :: newSnake.Body @ newBadFoodPositions
-                let newGoodFoodPos = safePosition occupiedForGood
 
-                let isSpecial = rand.Next(1, 101) <= 20
-                let newFood = if isSpecial then Special newGoodFoodPos else Normal newGoodFoodPos
-                
-                let newDelay = Math.Max(30, delay - step)
-                
-                Playing (newSnake, newFood, newBadFoods, newScore, newDelay, step)
+                match safePosition occupiedForGood with
+                | Some newGoodFoodPos ->
+                    // There is space so spawn the food and continue playing
+                    let isSpecial = rand.Next(1, 101) <= 20
+                    let newFood = if isSpecial then Special newGoodFoodPos else Normal newGoodFoodPos
+                    Playing (newSnake, newFood, newBadFoods, newScore, newDelay, step)
+                    
+                | None ->
+                    // Board full - must end game
+                    GameOver (newScore, newDelay, step)
             else
                 let newBody = snake.Head :: (List.take (List.length snake.Body - 1) snake.Body)
                 let newSnake = { snake with Head = newHead; Body = newBody }
