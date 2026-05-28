@@ -70,7 +70,7 @@ let draw (state: GameState) =
         printfn "~~~ Welcome to Snake! ~~~"
         printfn "Your goal is to eat the apples and bananas to grow as long as possible."
         printfn "Apples give 10 points, while bananas give 50 points and clear all bad food from the board!"
-        printfn "Avoid the purple bad food - it will end the game if you eat it!"
+        printfn "Avoid the blue bad food - it will end the game if you eat it!"
         printfn "Use WASD to change direction. Press 'Q' to quit."
         printfn ""
         printfn "Select difficulty by pressing 1, 2, or 3:"
