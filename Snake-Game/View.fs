@@ -28,7 +28,7 @@ module Theme =
 
 open Theme
 
-let getCommand () : Command option =
+let private getCommand () : Command option =
     if not Console.KeyAvailable then 
         None
     else
@@ -50,7 +50,7 @@ let getCommand () : Command option =
         | ConsoleKey.Q -> Some QuitGame
         | _ -> None
 
-let printElement (c: char) (color: ConsoleColor) =
+let private printElement (c: char) (color: ConsoleColor) =
     let originalForeground = Console.ForegroundColor
     let originalBackground = Console.BackgroundColor
     Console.ForegroundColor <- color
@@ -158,7 +158,7 @@ let private drawPlaying snake currentGoodFood badFoods score =
     printElement badFood badFoodColor
     printfn ")"
 
-let draw (state: GameState) =
+let private draw (state: GameState) =
     Console.SetCursorPosition(0, 0)
 
     match state with
@@ -175,6 +175,7 @@ let draw (state: GameState) =
         ()
 
 // Makes this renderer conform to the IGameRenderer interface, making it a valid rendering layer for the game
+// It's also the only exposed thing in this module
 let consoleRenderer =
     { new IGameRenderer with
         member _.Render(state) = draw state

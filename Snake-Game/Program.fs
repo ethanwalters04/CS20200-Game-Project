@@ -16,8 +16,8 @@ let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
                 match state with
                 | Playing (snake, _, _, _, delay, _) -> 
                     match snake.CurrentDir with
-                    | Up | Down -> delay + (delay / 2) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
-                    | Left | Right -> delay
+                    | Up | Down -> int (delay + (delay / 3.5)) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
+                    | Left | Right -> int delay
                 | _ -> Timeout.Infinite
 
             let! msg = inbox.TryReceive(timeout) // Wait for a command or timeout for the next tick

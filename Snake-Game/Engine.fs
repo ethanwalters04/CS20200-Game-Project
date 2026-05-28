@@ -49,7 +49,7 @@ let private moveHead (pos: Position) (dir: Direction) =
     | Right -> { pos with X = pos.X + 1 }
 
 // Set up the initial game state
-let private initGame (startDelay: int, speedStep: int) =
+let private initGame (startDelay, speedStep) =
     let initSnake = {
         Head = { X = boardWidth / 2; Y = boardHeight / 2 } // Head in centre of board
         Body = [
