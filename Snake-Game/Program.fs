@@ -30,8 +30,13 @@ let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
             let nextState = Engine.update state command
 
             match state, nextState with
+            | MainMenu, Playing _ -> 
+                Console.Clear() // Clear console to get rid of stray text around game board
             | Playing _, GameOver _ -> 
                 do! Async.Sleep(1500) // Extra delay on game over to allow user to process what happened
+                Console.Clear()
+            | GameOver _, Playing _ -> Console.Clear()
+            | GameOver _, MainMenu -> Console.Clear()
             | _, Quitting -> Environment.Exit(0)
             | _ -> ()
 
