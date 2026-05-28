@@ -1,4 +1,4 @@
-module View
+﻿module View
 
 open System
 open Domain
@@ -61,82 +61,102 @@ let printElement (c: char) (color: ConsoleColor) =
     Console.ForegroundColor <- originalForeground
     Console.BackgroundColor <- originalBackground
 
-let draw (state: GameState) =
-    Console.SetCursorPosition(0, 0)
-    match state with
-    | MainMenu ->
-        Console.Clear()
-        printfn ""
-        printfn "~~~ Welcome to Snake! ~~~"
-        printfn "Your goal is to eat the apples and bananas to grow as long as possible."
-        printfn "Apples give 10 points, while bananas give 50 points and clear all bad food from the board!"
-        printfn "Avoid the blue bad food - it will end the game if you eat it!"
-        printfn "Use WASD to change direction. Press 'Q' to quit."
-        printfn ""
-        printfn "Select difficulty by pressing 1, 2, or 3:"
-        printfn "1. Easy (slow movement)"
-        printfn "2. Medium (medium movement)"
-        printfn "3. Hard (fast movement)"
-        printfn ""
-    | GameOver (finalScore, _, _) ->
-        Console.Clear()
-        printfn ""
-        printfn "~~~ Game Over! ~~~"
-        printfn "Your final score: %d" finalScore
-        printfn ""
-        printfn "Press 'M' to return to the main menu."
-        printfn ""
-    | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
-        printfn "Snake"
-        
-        // Extract the position of the good food regardless of its type
-        let goodFoodPos = match currentGoodFood with | Normal p -> p | Special p -> p
+// Retrieve the position of good food regardless of its type
+let private getGoodFoodPosition = function
+    | Normal position -> position
+    | Special position -> position
 
-        for y in 0 .. boardHeight - 1 do
-            for x in 0 .. boardWidth - 1 do
-                let pos = { X = x; Y = y }
+// Determine whether a position contains a wall element
+let private wallCell position =
+    match position with
+    // Wall positions - corners
+    | { X = 0; Y = 0 } -> Some (wallCornerTopLeft, wallColor)
+    | { X = x; Y = 0 } when x = boardWidth - 1 -> Some (wallCornerTopRight, wallColor)
+    | { X = 0; Y = y } when y = boardHeight - 1 -> Some (wallCornerBotLeft, wallColor)
+    | { X = x; Y = y } when x = boardWidth - 1 && y = boardHeight - 1 -> Some (wallCornerBotRight, wallColor)
 
-                match pos with
-                // Wall positions - corners 
-                | { X = 0; Y = 0 } -> printElement wallCornerTopLeft wallColor 
-                | { X = x; Y = 0 } when x = boardWidth - 1 -> printElement wallCornerTopRight wallColor 
-                | { X = 0; Y = y } when y = boardHeight - 1 -> printElement wallCornerBotLeft wallColor 
-                | { X = x; Y = y } when x = boardWidth - 1 && y = boardHeight - 1 -> printElement wallCornerBotRight wallColor 
+    // Wall positions - edges
+    | { X = 0 } -> Some (wallVertical, wallColor)
+    | { X = x } when x = boardWidth - 1 -> Some (wallVertical, wallColor)
+    | { Y = 0 } -> Some (wallHorizontal, wallColor)
+    | { Y = y } when y = boardHeight - 1 -> Some (wallHorizontal, wallColor)
 
-                // Wall positions - edges
-                | { X = 0 } -> printElement wallVertical wallColor 
-                | { X = x } when x = boardWidth - 1 -> printElement wallVertical wallColor 
-                | { Y = 0 } -> printElement wallHorizontal wallColor 
-                | { Y = y } when y = boardHeight - 1 -> printElement wallHorizontal wallColor 
+    | _ -> None
 
-                // Snake
-                | _ when pos = snake.Head -> printElement snakeHead snakeHeadColor
-                | _ when List.contains pos snake.Body -> printElement snakeBody snakeBodyColor
-                
-                // Bad Food
-                | _ when List.exists (fun bf -> bf.Pos = pos) badFoods -> printElement badFood badFoodColor
-                
-                // Good Food
-                | _ when pos = goodFoodPos ->
-                    match currentGoodFood with
-                    | Normal _ -> printElement normalGoodFood normalGoodFoodColor
-                    | Special _ -> printElement specialGoodFood specialGoodFoodColor
+let private drawMainMenu () =
+    Console.Clear()
+    printfn ""
+    printfn "~~~ Welcome to Snake! ~~~"
+    printfn "Your goal is to eat the apples and bananas to grow as long as possible."
+    printfn "Apples give 10 points, while bananas give 50 points and clear all bad food from the board!"
+    printfn "Avoid the blue bad food - it will end the game if you eat it!"
+    printfn "Use WASD to change direction. Press 'Q' to quit."
+    printfn ""
+    printfn "Select difficulty by pressing 1, 2, or 3:"
+    printfn "1. Easy (slow movement)"
+    printfn "2. Medium (medium movement)"
+    printfn "3. Hard (fast movement)"
+    printfn ""
 
-                // Empty space
-                | _ -> printElement ' ' boardBackgroundColor
+let private drawGameOver finalScore =
+    Console.Clear()
+    printfn ""
+    printfn "~~~ Game Over! ~~~"
+    printfn "Your final score: %d" finalScore
+    printfn ""
+    printfn "Press 'M' to return to the main menu."
+    printfn ""
 
-            // Shift to next line after each row
-            Console.WriteLine() 
+let private drawPlaying snake currentGoodFood badFoods score =
+    printfn "Snake"
 
-        // Under-board information:
-        printfn "Current score: %d" score
-        printf "Foods:  Normal ("
-        printElement normalGoodFood normalGoodFoodColor
-        printf ")  Special ("
-        printElement specialGoodFood specialGoodFoodColor
-        printf ")  Danger ("
-        printElement badFood badFoodColor
-        printfn ")"
+    let goodFoodPos = getGoodFoodPosition currentGoodFood
+    let snakeBodySet = Set.ofList snake.Body // Set faster than list for lookups
+    let badFoodSet = badFoods |> List.map (fun bf -> bf.Pos) |> Set.ofList // Set faster than list for lookups
+
+    for y in 0 .. boardHeight - 1 do
+        for x in 0 .. boardWidth - 1 do
+            let pos = { X = x; Y = y }
+
+            // Wall cells - take priority to prevent overlap by other elements
+            match wallCell pos with
+            | Some (character, color) ->
+                printElement character color
+
+            // Snake
+            | None when pos = snake.Head ->
+                printElement snakeHead snakeHeadColor
+            | None when Set.contains pos snakeBodySet ->
+                printElement snakeBody snakeBodyColor
+
+            // Bad Food
+            | None when Set.contains pos badFoodSet ->
+                printElement badFood badFoodColor
+
+            // Good Food
+            | None when pos = goodFoodPos ->
+                match currentGoodFood with
+                | Normal _ ->
+                    printElement normalGoodFood normalGoodFoodColor
+                | Special _ ->
+                    printElement specialGoodFood specialGoodFoodColor
+
+            // Empty space
+            | None ->
+                printElement ' ' boardBackgroundColor
+
+        // Shift to next line after each row
+        Console.WriteLine()
+
+    // Under-board information:
+    printfn "Current score: %d" score
+    printf "Foods:  Normal ("
+    printElement normalGoodFood normalGoodFoodColor
+    printf ")  Special ("
+    printElement specialGoodFood specialGoodFoodColor
+    printf ")  Danger ("
+    printElement badFood badFoodColor
+    printfn ")"
 
 // Makes this renderer conform to the IGameRenderer interface, making it a valid rendering layer for the game
 let consoleRenderer = 
