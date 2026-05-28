@@ -7,7 +7,7 @@ open Engine
 open View
 
 // Create the game as an actor that processes commands and updates the game state accordingly
-let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
+let createGameActor (randNumGen: Random) (renderer: IGameRenderer) (initialState: GameState) =
     MailboxProcessor.Start(fun inbox ->
         let rec loop (state: GameState) = async {
             renderer.Render state // Render the game according to its current state
@@ -27,7 +27,7 @@ let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
                 | Some cmd -> cmd
                 | None -> Tick
 
-            let nextState = Engine.update state command
+            let nextState = Engine.update randNumGen state command
 
             match state, nextState with
             | MainMenu, Playing _ -> 
@@ -37,10 +37,11 @@ let createGameActor (renderer: IGameRenderer) (initialState: GameState) =
                 Console.Clear()
             | GameOver _, Playing _ -> Console.Clear()
             | GameOver _, MainMenu -> Console.Clear()
-            | _, Quitting -> Environment.Exit(0)
             | _ -> ()
 
-            return! loop nextState
+            match nextState with
+            | Quitting -> () // Don't recurse if quitting
+            | _ -> return! loop nextState
         }
 
         loop initialState
@@ -51,15 +52,25 @@ let main _ =
     Console.CursorVisible <- false
     Console.Clear()
     
+    let randNumGen = Random()
     let renderer = consoleRenderer
-    let gameActor = createGameActor renderer MainMenu
+    let gameActor = createGameActor randNumGen renderer MainMenu
 
     let rec inputLoop () =
         match renderer.GetCommand() with
-        | Some cmd -> gameActor.Post cmd
-        | None -> ()
-
-        Thread.Sleep(15)
-        inputLoop ()
-    
+        | Some QuitGame -> 
+            gameActor.Post QuitGame 
+            () // Don't recurse if quitting
+                
+        | Some cmd -> 
+            gameActor.Post cmd
+            Thread.Sleep(15)
+            inputLoop () // Keep recursing for all other commands
+                
+        | None -> 
+            Thread.Sleep(15)
+            inputLoop () // Keep recursing if no key was pressed
+        
     inputLoop ()
+
+    0 // Exit code
