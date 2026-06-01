@@ -72,22 +72,29 @@ let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig
 
 let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
-    | SplashScreen, SkipOrNext -> MainMenu // Manual splash screen skip - proceed to main menu with keypress
-    | SplashScreen, Tick -> MainMenu // Auto splash screen timeout - proceed to main menu
+    | SplashScreen, SkipOrNext -> 
+        MainMenu // Manual splash screen skip - proceed to main menu with keypress
+    | SplashScreen, Tick -> 
+        MainMenu // Auto splash screen timeout - proceed to main menu
     | MainMenu, StartGame difficulty ->
         let difficultyConfig = difficultyConfigFor difficulty
         initGame config randNumGen difficultyConfig difficulty
     | DeathFreeze (_, _, _, _, _, _, difficulty), RestartGame ->
         let difficultyConfig = difficultyConfigFor difficulty
         initGame config randNumGen difficultyConfig difficulty
-    | DeathFreeze (_, _, _, score, delay, step, difficulty), SkipOrNext -> GameOver (score, delay, step, difficulty) // Manual death freeze skip - proceed to game over screen with keypress
-    | DeathFreeze (_, _, _, score, delay, step, difficulty), Tick -> GameOver (score, delay, step, difficulty) // Auto death freeze timeout - proceed to game over
+    | DeathFreeze (_, _, _, score, delay, step, difficulty), SkipOrNext -> 
+        GameOver (score, delay, step, difficulty) // Manual death freeze skip - proceed to game over screen with keypress
+    | DeathFreeze (_, _, _, score, delay, step, difficulty), Tick -> 
+        GameOver (score, delay, step, difficulty) // Auto death freeze timeout - proceed to game over
     | GameOver (_, delay, speedStep, difficulty), RestartGame ->
         let difficultyConfig = difficultyConfigFor difficulty
         initGame config randNumGen difficultyConfig difficulty
-    | GameOver (_, delay, speedStep, _), ReturnToMainMenu -> MainMenu
-    | Playing (_, _, _, _, delay, speedStep, _), ReturnToMainMenu -> MainMenu
-    | _, QuitGame -> Quitting
+    | GameOver (_, delay, speedStep, _), ReturnToMainMenu -> 
+        MainMenu
+    | Playing (_, _, _, _, delay, speedStep, _), ReturnToMainMenu -> 
+        MainMenu
+    | _, QuitGame -> 
+        Quitting
 
     // Process direction change commands (when playing)
     | Playing (snake, food, badFoods, score, delay, step, difficulty), ChangeDir newDir ->
