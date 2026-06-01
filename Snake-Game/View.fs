@@ -84,18 +84,22 @@ let private getGoodFoodPosition = function
 
 // Determine whether a position contains a wall element
 let private wallCell (boardConfig: BoardConfig) position =
+    // Board edges
+    let maxXBorder = boardConfig.Width - 1
+    let maxYBorder = boardConfig.Height - 1
+    
     match position with
     // Wall positions - corners
     | { X = 0; Y = 0 } -> Some (wallCornerTopLeft, wallColor)
-    | { X = x; Y = 0 } when x = boardConfig.Width - 1 -> Some (wallCornerTopRight, wallColor)
-    | { X = 0; Y = y } when y = boardConfig.Height - 1 -> Some (wallCornerBotLeft, wallColor)
-    | { X = x; Y = y } when x = boardConfig.Width - 1 && y = boardConfig.Height - 1 -> Some (wallCornerBotRight, wallColor)
+    | { X = x; Y = 0 } when x = maxXBorder -> Some (wallCornerTopRight, wallColor)
+    | { X = 0; Y = y } when y = maxYBorder -> Some (wallCornerBotLeft, wallColor)
+    | { X = x; Y = y } when x = maxXBorder && y = maxYBorder -> Some (wallCornerBotRight, wallColor)
 
     // Wall positions - edges
     | { X = 0 } -> Some (wallVertical, wallColor)
-    | { X = x } when x = boardConfig.Width - 1 -> Some (wallVertical, wallColor)
+    | { X = x } when x = maxXBorder -> Some (wallVertical, wallColor)
     | { Y = 0 } -> Some (wallHorizontal, wallColor)
-    | { Y = y } when y = boardConfig.Height - 1 -> Some (wallHorizontal, wallColor)
+    | { Y = y } when y = maxYBorder -> Some (wallHorizontal, wallColor)
 
     | _ -> None
 
