@@ -6,8 +6,8 @@ open Domain
 // Generate random positions indefinitely
 let private randomPositions (config: GameConfig) (randNumGen: Random) =
     Seq.unfold (fun _ -> 
-        let x = randNumGen.Next(1, config.BoardWidth - 1)
-        let y = randNumGen.Next(1, config.BoardHeight - 1)
+        let x = randNumGen.Next(1, config.Board.Width - 1)
+        let y = randNumGen.Next(1, config.Board.Height - 1)
         let pos = { X = x; Y = y }
 
         // Return the random position and continue the sequence
@@ -16,7 +16,7 @@ let private randomPositions (config: GameConfig) (randNumGen: Random) =
 
 // Retrieve a random unoccupied position
 let private safePosition (config: GameConfig) (randNumGen: Random) (occupied: Position list) =
-    let maxSpaces = (config.BoardWidth - 2) * (config.BoardHeight - 2) // Get size of playable board area
+    let maxSpaces = (config.Board.Width - 2) * (config.Board.Height - 2) // Get size of playable board area
 
     if List.length occupied >= maxSpaces then
         None // Board fully occupied - can't generate a safe position
@@ -27,7 +27,7 @@ let private safePosition (config: GameConfig) (randNumGen: Random) (occupied: Po
 
     // Check if a position is out of bounds
 let private isOutOfBounds (config: GameConfig) (pos: Position) =
-    pos.X <= 0 || pos.X >= config.BoardWidth - 1 || pos.Y <= 0 || pos.Y >= config.BoardHeight - 1
+    pos.X <= 0 || pos.X >= config.Board.Width - 1 || pos.Y <= 0 || pos.Y >= config.Board.Height - 1
 
 // Check if a turn is valid (not 180 degrees)
 let isValidTurn (currentDir: Direction) (newDir: Direction) =
@@ -47,12 +47,12 @@ let private moveHead (pos: Position) (dir: Direction) =
     | Right -> { pos with X = pos.X + 1 }
 
 // Set up the initial game state
-let private initGame (config: GameConfig) (randNumGen: Random) (startDelay, speedStep) =
+let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig: DifficultyConfig) =
     let initSnake = {
-        Head = { X = config.BoardWidth / 2; Y = config.BoardHeight / 2 } // Head in centre of board
+        Head = { X = config.Board.Width / 2; Y = config.Board.Height / 2 } // Head in centre of board
         Body = [
-            { X = config.BoardWidth / 2; Y = (config.BoardHeight / 2) + 1 }
-            { X = config.BoardWidth / 2; Y = (config.BoardHeight / 2) + 2 }
+            { X = config.Board.Width / 2; Y = (config.Board.Height / 2) + 1 }
+            { X = config.Board.Width / 2; Y = (config.Board.Height / 2) + 2 }
         ]
         CurrentDir = Up
     }
@@ -65,15 +65,33 @@ let private initGame (config: GameConfig) (randNumGen: Random) (startDelay, spee
             if isSpecial then Special initGoodFoodPos
             else Normal initGoodFoodPos
 
-        Playing (initSnake, initGoodFood, [], 0, startDelay, speedStep)
+        Playing (
+            initSnake,
+            initGoodFood,
+            [],
+            0,
+            difficultyConfig.StartDelay,
+            difficultyConfig.SpeedStep
+        )
 
     | None ->
-        GameOver (0, startDelay, speedStep) // Board full on initial spawn, e.g. if the playable area is too small, so end game immediately
+        GameOver (
+            0,
+            difficultyConfig.StartDelay,
+            difficultyConfig.SpeedStep
+        ) // Board full on initial spawn, e.g. if the playable area is too small, so end game immediately
 
-let update (config: GameConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
+let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
-    | MainMenu, StartGame (delay, speedStep) -> initGame config randNumGen (delay, speedStep)
-    | GameOver (_, delay, speedStep), RestartGame -> initGame config randNumGen (delay, speedStep)
+    | MainMenu, StartGame difficulty ->
+
+        let difficultyConfig =
+            difficultyConfigFor difficulty
+
+        initGame config randNumGen difficultyConfig
+    | GameOver (_, delay, speedStep), RestartGame ->
+        let difficultyConfig = { StartDelay = delay; SpeedStep = speedStep }
+        initGame config randNumGen difficultyConfig
     | GameOver (_, delay, speedStep), ReturnToMainMenu -> MainMenu
     | Playing (_, _, _, _, delay, speedStep), ReturnToMainMenu -> MainMenu
     | _, QuitGame -> Quitting
@@ -120,12 +138,12 @@ let update (config: GameConfig) (randNumGen: Random) (state: GameState) (cmd: Co
                         
                         // Try to find a safe pos for new bad food or skip if full
                         match safePosition config randNumGen occupiedForBad with
-                        | Some pos -> (config.NormalGoodFoodScore, { Pos = pos } :: badFoods)
-                        | None -> (config.NormalGoodFoodScore, badFoods)
+                        | Some pos -> (config.Score.NormalGoodFoodScore, { Pos = pos } :: badFoods)
+                        | None -> (config.Score.NormalGoodFoodScore, badFoods)
                         
                     | Special _ -> 
                         // Special: +50 Points, Clear all Bad Foods
-                        (config.SpecialGoodFoodScore, [])
+                        (config.Score.SpecialGoodFoodScore, [])
                     
                 let newScore = score + scoreIncrease
                 let newDelay = Math.Max(30, delay - step)

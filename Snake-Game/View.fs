@@ -28,7 +28,7 @@ module private Theme =
 
 open Theme
 
-let private getCommand config : Command option =
+let private getCommand () : Command option =
     if not Console.KeyAvailable then 
         None
     else
@@ -40,10 +40,9 @@ let private getCommand config : Command option =
         | ConsoleKey.A -> Some (ChangeDir Left)
         | ConsoleKey.D -> Some (ChangeDir Right)
         
-        // StartGame takes (startingDelay, speedStep)
-        | ConsoleKey.D1 -> Some (StartGame (config.EasyDelay, config.EasySpeedStep)) // Easy
-        | ConsoleKey.D2 -> Some (StartGame (config.MediumDelay, config.MediumSpeedStep)) // Medium
-        | ConsoleKey.D3 -> Some (StartGame (config.HardDelay, config.HardSpeedStep))  // Hard
+        | ConsoleKey.D1 -> Some (StartGame Easy)
+        | ConsoleKey.D2 -> Some (StartGame Medium)
+        | ConsoleKey.D3 -> Some (StartGame Hard)
         
         | ConsoleKey.M -> Some ReturnToMainMenu
         | ConsoleKey.R -> Some RestartGame
@@ -67,19 +66,19 @@ let private getGoodFoodPosition = function
     | Special position -> position
 
 // Determine whether a position contains a wall element
-let private wallCell config position =
+let private wallCell (boardConfig: BoardConfig) position =
     match position with
     // Wall positions - corners
     | { X = 0; Y = 0 } -> Some (wallCornerTopLeft, wallColor)
-    | { X = x; Y = 0 } when x = config.BoardWidth - 1 -> Some (wallCornerTopRight, wallColor)
-    | { X = 0; Y = y } when y = config.BoardHeight - 1 -> Some (wallCornerBotLeft, wallColor)
-    | { X = x; Y = y } when x = config.BoardWidth - 1 && y = config.BoardHeight - 1 -> Some (wallCornerBotRight, wallColor)
+    | { X = x; Y = 0 } when x = boardConfig.Width - 1 -> Some (wallCornerTopRight, wallColor)
+    | { X = 0; Y = y } when y = boardConfig.Height - 1 -> Some (wallCornerBotLeft, wallColor)
+    | { X = x; Y = y } when x = boardConfig.Width - 1 && y = boardConfig.Height - 1 -> Some (wallCornerBotRight, wallColor)
 
     // Wall positions - edges
     | { X = 0 } -> Some (wallVertical, wallColor)
-    | { X = x } when x = config.BoardWidth - 1 -> Some (wallVertical, wallColor)
+    | { X = x } when x = boardConfig.Width - 1 -> Some (wallVertical, wallColor)
     | { Y = 0 } -> Some (wallHorizontal, wallColor)
-    | { Y = y } when y = config.BoardHeight - 1 -> Some (wallHorizontal, wallColor)
+    | { Y = y } when y = boardConfig.Height - 1 -> Some (wallHorizontal, wallColor)
 
     | _ -> None
 
@@ -107,19 +106,19 @@ let private drawGameOver finalScore =
     printfn "Press 'M' to return to the main menu."
     printfn ""
 
-let private drawPlaying config snake currentGoodFood badFoods score =
+let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFoods score =
     printfn "Snake"
 
     let goodFoodPos = getGoodFoodPosition currentGoodFood
     let snakeBodySet = Set.ofList snake.Body // Set faster than list for lookups
     let badFoodSet = badFoods |> List.map (fun bf -> bf.Pos) |> Set.ofList // Set faster than list for lookups
 
-    for y in 0 .. config.BoardHeight - 1 do
-        for x in 0 .. config.BoardWidth - 1 do
+    for y in 0 .. boardConfig.Height - 1 do
+        for x in 0 .. boardConfig.Width - 1 do
             let pos = { X = x; Y = y }
 
             // Wall cells - take priority to prevent overlap by other elements
-            match wallCell config pos with
+            match wallCell boardConfig pos with
             | Some (character, color) ->
                 printElement character color
 
@@ -158,7 +157,7 @@ let private drawPlaying config snake currentGoodFood badFoods score =
     printElement badFood badFoodColor
     printfn ")"
 
-let private draw (config: GameConfig) (state: GameState) =
+let private draw (boardConfig: BoardConfig) (state: GameState) =
     Console.SetCursorPosition(0, 0)
 
     match state with
@@ -169,15 +168,15 @@ let private draw (config: GameConfig) (state: GameState) =
         drawGameOver finalScore
 
     | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
-        drawPlaying config snake currentGoodFood badFoods score
+        drawPlaying boardConfig snake currentGoodFood badFoods score
 
     | Quitting ->
         ()
 
 // Makes this renderer conform to the IGameRenderer interface, making it a valid rendering layer for the game
 // It's also the only exposed thing in this module
-let createConsoleRenderer (config: GameConfig) =
+let createConsoleRenderer (boardConfig: BoardConfig) =
     { new IGameRenderer with
-        member _.Render(state) = draw config state
-        member _.GetCommand() = getCommand config
+        member _.Render(state) = draw boardConfig state
+        member _.GetCommand() = getCommand ()
     }

@@ -1,21 +1,28 @@
 module SnakeGame.Domain
 
-type GameConfig = {
-    // Board dimensions
-    BoardWidth: int
-    BoardHeight: int
-    
-    // Tick timing based on difficulty
-    EasyDelay: float
-    MediumDelay: float
-    HardDelay: float
-    EasySpeedStep: float
-    MediumSpeedStep: float
-    HardSpeedStep: float
+type BoardConfig = {
+    Width: int
+    Height: int
+}
 
-    // Scoring per food type
+type ScoreConfig = {
     NormalGoodFoodScore: int
     SpecialGoodFoodScore: int
+}
+
+type GameConfig = {
+    Board: BoardConfig
+    Score: ScoreConfig
+}
+
+type Difficulty =
+    | Easy
+    | Medium
+    | Hard
+
+type DifficultyConfig = {
+    StartDelay: float
+    SpeedStep: float
 }
 
 type Position = { X: int; Y: int }
@@ -49,7 +56,7 @@ type GameState =
 type Command =
     | Tick 
     | ChangeDir of Direction 
-    | StartGame of delay: float * speedStep: float
+    | StartGame of Difficulty
     | ReturnToMainMenu
     | RestartGame
     | QuitGame

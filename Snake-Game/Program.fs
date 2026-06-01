@@ -7,7 +7,7 @@ open Engine
 open View
 
 // Create the game as an actor that processes commands and updates the game state accordingly
-let private createGameActor (config: GameConfig) (randNumGen: Random) (renderer: IGameRenderer) (initialState: GameState) =
+let private createGameActor (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyConfig) (randNumGen: Random) (renderer: IGameRenderer) (initialState: GameState) =
     MailboxProcessor.Start(fun inbox ->
         let rec loop (state: GameState) = async {
             renderer.Render state // Render the game according to its current state
@@ -27,7 +27,7 @@ let private createGameActor (config: GameConfig) (randNumGen: Random) (renderer:
                 | Some cmd -> cmd
                 | None -> Tick
 
-            let nextState = Engine.update config randNumGen state command
+            let nextState = Engine.update config difficultyConfigFor randNumGen state command
 
             match state, nextState with
             | MainMenu, Playing _ -> 
@@ -54,24 +54,27 @@ let main _ =
     
     let randNumGen = Random()
     let config = {
-        // Board dimensions
-        BoardWidth = 35
-        BoardHeight = 15
+        Board = {
+            Width = 35
+            Height = 15
+        }
 
-        // Tick timing based on difficulty
-        EasyDelay = 150.0
-        MediumDelay = 100.0
-        HardDelay = 60.0
-        EasySpeedStep = 2.0
-        MediumSpeedStep = 5.0
-        HardSpeedStep = 8.0
-
-        // Scoring per food type
-        NormalGoodFoodScore = 1
-        SpecialGoodFoodScore = 5
+        Score = {
+            NormalGoodFoodScore = 10
+            SpecialGoodFoodScore = 50
+        }
     }
-    let renderer = createConsoleRenderer config
-    let gameActor = createGameActor config randNumGen renderer MainMenu
+
+    let difficultyConfig = function
+        | Easy ->
+            { StartDelay = 150.0; SpeedStep = 2.0 }
+        | Medium ->
+            { StartDelay = 100.0; SpeedStep = 5.0 }
+        | Hard ->
+            { StartDelay = 60.0; SpeedStep = 8.0 }
+
+    let renderer = createConsoleRenderer config.Board
+    let gameActor = createGameActor config difficultyConfig randNumGen renderer MainMenu
 
     let rec inputLoop () =
         match renderer.GetCommand() with
