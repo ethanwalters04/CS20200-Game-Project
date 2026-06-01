@@ -1,7 +1,22 @@
-module Domain
+module SnakeGame.Domain
 
-let boardWidth = 35
-let boardHeight = 15
+type GameConfig = {
+    // Board dimensions
+    BoardWidth: int
+    BoardHeight: int
+    
+    // Tick timing based on difficulty
+    EasyDelay: float
+    MediumDelay: float
+    HardDelay: float
+    EasySpeedStep: float
+    MediumSpeedStep: float
+    HardSpeedStep: float
+
+    // Scoring per food type
+    NormalGoodFoodScore: int
+    SpecialGoodFoodScore: int
+}
 
 type Position = { X: int; Y: int }
 type Direction = Up | Down | Left | Right

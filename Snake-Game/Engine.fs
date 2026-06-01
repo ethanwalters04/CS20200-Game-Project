@@ -1,13 +1,13 @@
-module Engine
+module SnakeGame.Engine
 
 open System
 open Domain
 
 // Generate random positions indefinitely
-let private randomPositions (randNumGen: Random) =
+let private randomPositions (config: GameConfig) (randNumGen: Random) =
     Seq.unfold (fun _ -> 
-        let x = randNumGen.Next(1, boardWidth - 1)
-        let y = randNumGen.Next(1, boardHeight - 1)
+        let x = randNumGen.Next(1, config.BoardWidth - 1)
+        let y = randNumGen.Next(1, config.BoardHeight - 1)
         let pos = { X = x; Y = y }
 
         // Return the random position and continue the sequence
@@ -15,19 +15,19 @@ let private randomPositions (randNumGen: Random) =
     ) ()
 
 // Retrieve a random unoccupied position
-let safePosition (randNumGen: Random) (occupied: Position list) =
-    let maxSpaces = (boardWidth - 2) * (boardHeight - 2) // Get size of playable board area
+let private safePosition (config: GameConfig) (randNumGen: Random) (occupied: Position list) =
+    let maxSpaces = (config.BoardWidth - 2) * (config.BoardHeight - 2) // Get size of playable board area
 
     if List.length occupied >= maxSpaces then
         None // Board fully occupied - can't generate a safe position
     else
-        randomPositions randNumGen
+        randomPositions config randNumGen
         |> Seq.filter (fun pos -> not (List.contains pos occupied)) // Filters out occupied positions
         |> Seq.tryHead // Gets the first position of the filtered sequence
 
     // Check if a position is out of bounds
-let isOutOfBounds (pos: Position) =
-    pos.X <= 0 || pos.X >= boardWidth - 1 || pos.Y <= 0 || pos.Y >= boardHeight - 1
+let private isOutOfBounds (config: GameConfig) (pos: Position) =
+    pos.X <= 0 || pos.X >= config.BoardWidth - 1 || pos.Y <= 0 || pos.Y >= config.BoardHeight - 1
 
 // Check if a turn is valid (not 180 degrees)
 let isValidTurn (currentDir: Direction) (newDir: Direction) =
@@ -47,17 +47,17 @@ let private moveHead (pos: Position) (dir: Direction) =
     | Right -> { pos with X = pos.X + 1 }
 
 // Set up the initial game state
-let private initGame (randNumGen: Random) (startDelay, speedStep) =
+let private initGame (config: GameConfig) (randNumGen: Random) (startDelay, speedStep) =
     let initSnake = {
-        Head = { X = boardWidth / 2; Y = boardHeight / 2 } // Head in centre of board
+        Head = { X = config.BoardWidth / 2; Y = config.BoardHeight / 2 } // Head in centre of board
         Body = [
-            { X = boardWidth / 2; Y = (boardHeight / 2) + 1 }
-            { X = boardWidth / 2; Y = (boardHeight / 2) + 2 }
+            { X = config.BoardWidth / 2; Y = (config.BoardHeight / 2) + 1 }
+            { X = config.BoardWidth / 2; Y = (config.BoardHeight / 2) + 2 }
         ]
         CurrentDir = Up
     }
 
-    match safePosition randNumGen (initSnake.Head :: initSnake.Body) with
+    match safePosition config randNumGen (initSnake.Head :: initSnake.Body) with
     | Some initGoodFoodPos ->
 
         let isSpecial = randNumGen.Next(1,101) <= 20 // 20% chance of new food being special food
@@ -70,10 +70,10 @@ let private initGame (randNumGen: Random) (startDelay, speedStep) =
     | None ->
         GameOver (0, startDelay, speedStep) // Board full on initial spawn, e.g. if the playable area is too small, so end game immediately
 
-let update (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
+let update (config: GameConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
-    | MainMenu, StartGame (delay, speedStep) -> initGame randNumGen (delay, speedStep)
-    | GameOver (_, delay, speedStep), RestartGame -> initGame randNumGen (delay, speedStep)
+    | MainMenu, StartGame (delay, speedStep) -> initGame config randNumGen (delay, speedStep)
+    | GameOver (_, delay, speedStep), RestartGame -> initGame config randNumGen (delay, speedStep)
     | GameOver (_, delay, speedStep), ReturnToMainMenu -> MainMenu
     | Playing (_, _, _, _, delay, speedStep), ReturnToMainMenu -> MainMenu
     | _, QuitGame -> Quitting
@@ -100,7 +100,7 @@ let update (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     | Playing (snake, food, badFoods, score, delay, step), Tick ->
         let newHead = moveHead snake.Head snake.CurrentDir
 
-        if isOutOfBounds newHead 
+        if isOutOfBounds config newHead 
             || List.exists (fun pos -> pos = newHead) snake.Body
             || List.exists (fun bf -> bf.Pos = newHead) badFoods then
                 GameOver (score, delay, step)
@@ -119,13 +119,13 @@ let update (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
                         let occupiedForBad = newSnake.Head :: newSnake.Body @ badFoodPositions
                         
                         // Try to find a safe pos for new bad food or skip if full
-                        match safePosition randNumGen occupiedForBad with
-                        | Some pos -> (10, { Pos = pos } :: badFoods)
-                        | None -> (10, badFoods)
+                        match safePosition config randNumGen occupiedForBad with
+                        | Some pos -> (config.NormalGoodFoodScore, { Pos = pos } :: badFoods)
+                        | None -> (config.NormalGoodFoodScore, badFoods)
                         
                     | Special _ -> 
                         // Special: +50 Points, Clear all Bad Foods
-                        (50, [])
+                        (config.SpecialGoodFoodScore, [])
                     
                 let newScore = score + scoreIncrease
                 let newDelay = Math.Max(30, delay - step)
@@ -133,7 +133,7 @@ let update (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
                 let newBadFoodPositions = List.map (fun bf -> bf.Pos) newBadFoods
                 let occupiedForGood = newSnake.Head :: newSnake.Body @ newBadFoodPositions
 
-                match safePosition randNumGen occupiedForGood with
+                match safePosition config randNumGen occupiedForGood with
                 | Some newGoodFoodPos ->
                     // There is space so spawn the food and continue playing
                     let isSpecial = randNumGen.Next(1, 101) <= 20
