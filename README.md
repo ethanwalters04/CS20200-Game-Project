@@ -4,7 +4,7 @@
 
 To run the game, follow these instructions:
 
-1. Open your terminal or command prompt.
+1. Open your terminal or command prompt. Ensure it is quite large so the game can be rendered correctly.
 2. Navigate to the root directory of the repository (where the `.fsproj` file is located).
 3. Execute the following command:
 ```bash
