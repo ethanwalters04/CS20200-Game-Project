@@ -5,7 +5,7 @@ open Domain
 
 module private Theme =
     // Colors
-    let boardBackgroundColor = ConsoleColor.Black
+    let playingTitleColor = ConsoleColor.Green
     let snakeHeadColor = ConsoleColor.Green
     let snakeBodyColor = ConsoleColor.DarkGreen
     let normalGoodFoodColor = ConsoleColor.DarkBlue
@@ -13,16 +13,16 @@ module private Theme =
     let badFoodColor = ConsoleColor.DarkRed
     let wallColor = ConsoleColor.Gray
 
+    let basicTextColor = ConsoleColor.DarkGray
+
     let deathFreezeTextColor = ConsoleColor.DarkRed
 
     let gameOverTitleColor = ConsoleColor.DarkRed
-    let gameOverTextColor = ConsoleColor.DarkGray
 
     let splashScreenTitleColor = ConsoleColor.Green
     let splashScreenSubtitleColor = ConsoleColor.Red
 
     let mainMenuTitleColor = ConsoleColor.White
-    let mainMenuTextColor = ConsoleColor.DarkGray
     let mainMenuEasyColor = ConsoleColor.DarkGreen
     let mainMenuMediumColor = ConsoleColor.DarkYellow
     let mainMenuHardColor = ConsoleColor.DarkRed
@@ -66,16 +66,16 @@ let private getCommand () : Command option =
 
         | _ -> None
 
-let private printElement (c: char) (color: ConsoleColor) =
-    let originalForeground = Console.ForegroundColor
-    let originalBackground = Console.BackgroundColor
-    Console.ForegroundColor <- color
-    Console.BackgroundColor <- boardBackgroundColor
-    printf "%c" c
+let private withForegroundColor color f =
+    let old = Console.ForegroundColor
+    try
+        Console.ForegroundColor <- color
+        f()
+    finally
+        Console.ForegroundColor <- old
 
-    // Preserve original console colors for the next element
-    Console.ForegroundColor <- originalForeground
-    Console.BackgroundColor <- originalBackground
+let private printElement (c: char) (color: ConsoleColor) =
+    withForegroundColor color (fun () -> printf "%c" c)
 
 // Retrieve the position of good food regardless of its type
 let private getGoodFoodPosition = function
@@ -100,56 +100,60 @@ let private wallCell (boardConfig: BoardConfig) position =
     | _ -> None
 
 let private drawSplashScreen () =
-    let originalForeground = Console.ForegroundColor
+    withForegroundColor splashScreenTitleColor (fun () ->
+        printfn ""
+        printfn "  ____  _   _    _    _  _______ "
+        printfn " / ___|| \\ | |  / \\  | |/ / ____|"
+        printfn " \\___ \\|  \\| | / _ \\ | ' /|  _|  "
+        printfn "  ___) | |\\  |/ ___ \\| . \\| |___ "
+        printfn " |____/|_| \\_/_/   \\_\\_|\\_\\_____|"
+    )
 
-    printfn ""
-    Console.ForegroundColor <- splashScreenTitleColor
-    printfn "  ____  _   _    _    _  _______ "
-    printfn " / ___|| \\ | |  / \\  | |/ / ____|"
-    printfn " \\___ \\|  \\| | / _ \\ | ' /|  _|  "
-    printfn "  ___) | |\\  |/ ___ \\| . \\| |___ "
-    printfn " |____/|_| \\_/_/   \\_\\_|\\_\\_____|"
-    Console.ForegroundColor <- splashScreenSubtitleColor
-    printfn "              By Ethan J Walters"
-    Console.ForegroundColor <- originalForeground
-    printfn ""
+    withForegroundColor splashScreenSubtitleColor (fun () ->
+        printfn "              By Ethan J Walters"
+        printfn ""
+    )
 
 let private drawMainMenu () =
-    let originalForeground = Console.ForegroundColor
-
-    printfn ""
-    Console.ForegroundColor <- mainMenuTitleColor
-    printfn "~~~ Welcome to Snake! ~~~"
-    Console.ForegroundColor <- mainMenuTextColor
-    printfn "Your goal is to eat the blueberries and bananas to grow as long as possible."
-    printfn "Blueberries give 10 points, while bananas give 50 points and clear all bad food from the board!"
-    printfn "Avoid the red bad food - it will end the game if you eat it!"
-    printfn "Use WASD to change direction. Press 'Q' to quit."
-    printfn ""
-    printfn "Select difficulty by pressing 1, 2, or 3:"
-    Console.ForegroundColor <- mainMenuEasyColor
-    printfn "1. Easy (slow movement)"
-    Console.ForegroundColor <- mainMenuMediumColor
-    printfn "2. Medium (medium movement)"
-    Console.ForegroundColor <- mainMenuHardColor
-    printfn "3. Hard (fast movement)"
-    Console.ForegroundColor <- originalForeground
-    printfn ""
+    withForegroundColor mainMenuTitleColor (fun () -> 
+        printfn ""
+        printfn "~~~ Welcome to Snake! ~~~"
+    )
+    withForegroundColor basicTextColor (fun () ->
+        printfn "Your goal is to eat the blueberries and bananas to grow as long as possible."
+        printfn "Blueberries give 10 points, while bananas give 50 points and clear all bad food from the board!"
+        printfn "Avoid the red bad food - it will end the game if you eat it!"
+        printfn "Use WASD to change direction. Press 'Q' to quit."
+        printfn ""
+        printfn "Select difficulty by pressing 1, 2, or 3:"
+    )
+    withForegroundColor mainMenuEasyColor (fun () ->
+        printfn "1. Easy (slow movement)"
+    )
+    withForegroundColor mainMenuMediumColor (fun () ->
+        printfn "2. Medium (medium movement)"
+    )
+    withForegroundColor mainMenuHardColor (fun () ->
+        printfn "3. Hard (fast movement)"
+        printfn ""
+    )
 
 let private drawGameOver finalScore =
-    let originalForeground = Console.ForegroundColor
-
-    printfn ""
-    Console.ForegroundColor <- gameOverTitleColor
-    printfn "~~~ Game Over! ~~~"
-    Console.ForegroundColor <- gameOverTextColor
-    printfn "Your final score: %d" finalScore
-    printfn ""
-    printfn "Press 'M' to return to the main menu."
-    printfn ""
+    withForegroundColor gameOverTitleColor (fun () ->
+        printfn ""
+        printfn "~~~ Game Over! ~~~"
+    )
+    withForegroundColor basicTextColor (fun () ->
+        printfn "Your final score: %d" finalScore
+        printfn ""
+        printfn "Press 'M' to return to the main menu."
+        printfn ""
+    )
 
 let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFoods score isDead =
-    printfn "Snake"
+    withForegroundColor playingTitleColor (fun () ->
+        printfn "Snake"
+    )
 
     let goodFoodPos = getGoodFoodPosition currentGoodFood
     let snakeBodySet = Set.ofList snake.Body // Set faster than list for lookups
@@ -184,7 +188,7 @@ let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFood
 
             // Empty space
             | None ->
-                printElement ' ' boardBackgroundColor
+                printf " "
 
         // Shift to next line after each row
         Console.WriteLine()
@@ -195,23 +199,29 @@ let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFood
         let startY = (boardConfig.Height / 2) + 1 
         
         Console.SetCursorPosition(startX, startY)
-        let oldForeground = Console.ForegroundColor
-        Console.ForegroundColor <- deathFreezeTextColor
-        printf "%s" msg
-        Console.ForegroundColor <- oldForeground
+
+        withForegroundColor deathFreezeTextColor (fun () ->
+            printf "%s" msg
+        )
         
         // Reset cursor to the bottom so the score prints in the correct location
         Console.SetCursorPosition(0, boardConfig.Height + 1)
 
     // Under-board information:
-    printfn "Current score: %d" score
-    printf "Foods:  Normal ("
-    printElement normalGoodFood normalGoodFoodColor
-    printf ")  Special ("
-    printElement specialGoodFood specialGoodFoodColor
-    printf ")  Danger ("
-    printElement badFood badFoodColor
-    printfn ")"
+    withForegroundColor basicTextColor (fun () ->
+        printfn "Current score: %d" score
+
+        printf "Foods:  Normal ("
+        withForegroundColor normalGoodFoodColor (fun () -> printf "%c" normalGoodFood)
+
+        printf ")  Special ("
+        withForegroundColor specialGoodFoodColor (fun () -> printf "%c" specialGoodFood)
+
+        printf ")  Danger ("
+        withForegroundColor badFoodColor (fun () -> printf "%c" badFood)
+
+        printfn ")"
+    )
 
 let private draw (boardConfig: BoardConfig) (state: GameState) =
     Console.SetCursorPosition(0, 0)
