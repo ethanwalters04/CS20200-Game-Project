@@ -67,7 +67,7 @@ let main _ =
 
     let difficultyConfig = function
         | Easy ->
-            { StartDelay = 150.0; SpeedStep = 2.0 }
+            { StartDelay = 140.0; SpeedStep = 2.0 }
         | Medium ->
             { StartDelay = 100.0; SpeedStep = 4.5 }
         | Hard ->
