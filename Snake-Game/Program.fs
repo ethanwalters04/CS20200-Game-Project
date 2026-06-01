@@ -34,6 +34,7 @@ let private createGameActor (config: GameConfig) (difficultyConfigFor: Difficult
             | SplashScreen, MainMenu -> Console.Clear()
             | MainMenu, Playing _ -> Console.Clear()
             | Playing _, GameOver _ -> Console.Clear()
+            | Playing _, MainMenu -> Console.Clear()
             | DeathFreeze _, GameOver _ -> Console.Clear()
             | GameOver _, Playing _ -> Console.Clear()
             | GameOver _, MainMenu -> Console.Clear()
