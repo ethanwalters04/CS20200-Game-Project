@@ -13,6 +13,8 @@ module private Theme =
     let badFoodColor = ConsoleColor.DarkRed
     let wallColor = ConsoleColor.Gray
 
+    let deathFreezeTextColor = ConsoleColor.DarkRed
+
     let splashScreenTitleColor = ConsoleColor.Green
     let splashScreenSubtitleColor = ConsoleColor.Red
 
@@ -57,7 +59,7 @@ let private getCommand () : Command option =
         | ConsoleKey.R -> Some RestartGame
         | ConsoleKey.Q -> Some QuitGame
 
-        | ConsoleKey.Enter -> Some ProceedToMainMenu // For proceeding from splash screen
+        | ConsoleKey.Enter -> Some SkipOrNext
 
         | _ -> None
 
@@ -139,7 +141,7 @@ let private drawGameOver finalScore =
     printfn "Press 'M' to return to the main menu."
     printfn ""
 
-let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFoods score =
+let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFoods score isDead =
     printfn "Snake"
 
     let goodFoodPos = getGoodFoodPosition currentGoodFood
@@ -179,6 +181,20 @@ let private drawPlaying (boardConfig: BoardConfig) snake currentGoodFood badFood
 
         // Shift to next line after each row
         Console.WriteLine()
+    
+    if isDead then
+        let msg = "GAME OVER"
+        let startX = (boardConfig.Width - msg.Length) / 2
+        let startY = (boardConfig.Height / 2) + 1 
+        
+        Console.SetCursorPosition(startX, startY)
+        let oldForeground = Console.ForegroundColor
+        Console.ForegroundColor <- deathFreezeTextColor
+        printf "%s" msg
+        Console.ForegroundColor <- oldForeground
+        
+        // Reset cursor to the bottom so the score prints in the correct location
+        Console.SetCursorPosition(0, boardConfig.Height + 1)
 
     // Under-board information:
     printfn "Current score: %d" score
@@ -203,8 +219,11 @@ let private draw (boardConfig: BoardConfig) (state: GameState) =
     | GameOver (finalScore, _, _) ->
         drawGameOver finalScore
 
+    | DeathFreeze (snake, currentGoodFood, badFoods, score, _, _) ->
+        drawPlaying boardConfig snake currentGoodFood badFoods score true
+
     | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
-        drawPlaying boardConfig snake currentGoodFood badFoods score
+        drawPlaying boardConfig snake currentGoodFood badFoods score false
 
     | Quitting ->
         ()

@@ -83,14 +83,13 @@ let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig
 
 let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
-    | SplashScreen, ProceedToMainMenu -> MainMenu // Manual splash screen skip - proceed to main menu with keypress
+    | SplashScreen, SkipOrNext -> MainMenu // Manual splash screen skip - proceed to main menu with keypress
     | SplashScreen, Tick -> MainMenu // Auto splash screen timeout - proceed to main menu
     | MainMenu, StartGame difficulty ->
-
-        let difficultyConfig =
-            difficultyConfigFor difficulty
-
+        let difficultyConfig = difficultyConfigFor difficulty
         initGame config randNumGen difficultyConfig
+    | DeathFreeze (_, _, _, score, delay, step), SkipOrNext -> GameOver (score, delay, step) // Manual death freeze skip - proceed to game over screen with keypress
+    | DeathFreeze (_, _, _, score, delay, step), Tick -> GameOver (score, delay, step) // Auto death freeze timeout - proceed to game over
     | GameOver (_, delay, speedStep), RestartGame ->
         let difficultyConfig = { StartDelay = delay; SpeedStep = speedStep }
         initGame config randNumGen difficultyConfig
@@ -123,7 +122,7 @@ let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyCo
         if isOutOfBounds config newHead 
             || List.exists (fun pos -> pos = newHead) snake.Body
             || List.exists (fun bf -> bf.Pos = newHead) badFoods then
-                GameOver (score, delay, step)
+                DeathFreeze (snake, food, badFoods, score, delay, step)
         else
             let goodFoodPos = match food with | Normal p -> p | Special p -> p
 

@@ -50,6 +50,7 @@ type GameState =
     | SplashScreen
     | MainMenu
     | Playing of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: float * speedStep: float
+    | DeathFreeze of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: float * speedStep: float
     | GameOver of finalScore: int * tickDelay: float * speedStep: float
     | Quitting
 
@@ -57,8 +58,9 @@ type GameState =
 type Command =
     | Tick
     | ChangeDir of Direction 
-    | ProceedToMainMenu
+    | ProceedToMainMenuFromSplash
     | StartGame of Difficulty
+    | SkipOrNext // For proceeding from splash screen or skipping death freeze
     | ReturnToMainMenu
     | RestartGame
     | QuitGame
