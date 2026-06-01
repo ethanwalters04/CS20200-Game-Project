@@ -127,7 +127,7 @@ let private drawMainMenu () =
         printfn "Your goal is to eat the blueberries and bananas to grow as long as possible."
         printfn "Blueberries give 10 points, while bananas give 50 points and clear all bad food from the board!"
         printfn "Avoid the red bad food - it will end the game if you eat it!"
-        printfn "Use WASD to change direction. Press 'Q' to quit."
+        printfn "Use WASD to change direction. Press 'Q' to quit, and 'M' to return to the main menu at any time."
         printfn ""
         printfn "Select difficulty by pressing 1, 2, or 3:"
     )
