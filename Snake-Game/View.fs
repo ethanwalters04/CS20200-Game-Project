@@ -146,7 +146,8 @@ let private drawGameOver finalScore =
     withForegroundColor basicTextColor (fun () ->
         printfn "Your final score: %d" finalScore
         printfn ""
-        printfn "Press 'M' to return to the main menu."
+        printfn "Press 'M' to return to the main menu,"
+        printfn "or 'R' to restart."
         printfn ""
     )
 
