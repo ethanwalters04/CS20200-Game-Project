@@ -14,7 +14,7 @@ dotnet run
 
 ## Requirement Changes
 
-There were no major changes.
+Changed from 'Launch into main menu' to 'Launch into splash screen', which then transitions to the main menu after a delay. I added this to make the game feel more polished and visually stimulating.
 
 ## LLM Attribution
 
