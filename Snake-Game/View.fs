@@ -15,6 +15,9 @@ module private Theme =
 
     let deathFreezeTextColor = ConsoleColor.DarkRed
 
+    let gameOverTitleColor = ConsoleColor.DarkRed
+    let gameOverTextColor = ConsoleColor.DarkGray
+
     let splashScreenTitleColor = ConsoleColor.Green
     let splashScreenSubtitleColor = ConsoleColor.Red
 
@@ -134,8 +137,12 @@ let private drawMainMenu () =
     printfn ""
 
 let private drawGameOver finalScore =
+    let originalForeground = Console.ForegroundColor
+
     printfn ""
+    Console.ForegroundColor <- gameOverTitleColor
     printfn "~~~ Game Over! ~~~"
+    Console.ForegroundColor <- gameOverTextColor
     printfn "Your final score: %d" finalScore
     printfn ""
     printfn "Press 'M' to return to the main menu."
