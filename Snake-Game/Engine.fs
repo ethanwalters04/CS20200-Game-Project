@@ -65,14 +65,7 @@ let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig
             if isSpecial then Special initGoodFoodPos
             else Normal initGoodFoodPos
 
-        Playing (
-            initSnake,
-            initGoodFood,
-            [],
-            0,
-            difficultyConfig.StartDelay,
-            difficultyConfig.SpeedStep
-        )
+        Playing (initSnake, initGoodFood, [], 0, difficultyConfig.StartDelay, difficultyConfig.SpeedStep) 
 
     | None ->
         GameOver (
