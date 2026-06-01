@@ -3,7 +3,6 @@ module SnakeGame.Program
 open System
 open System.Threading
 open Domain
-open Engine
 open View
 
 // Create the game as an actor that processes commands and updates the game state accordingly
@@ -16,7 +15,7 @@ let private createGameActor (config: GameConfig) (difficultyConfigFor: Difficult
                 match state with
                 | Playing (snake, _, _, _, delay, _) -> 
                     match snake.CurrentDir with
-                    | Up | Down -> int (delay + (delay / 3.5)) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
+                    | Up | Down -> int (delay * 1.8) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
                     | Left | Right -> int delay
                 | SplashScreen -> 3000 // Splash screen delay placed here to allow optional early exit if user presses Enter immediately
                 | DeathFreeze (_, _, _, _, delay, _) -> 4000 // Death freeze delay placed here to allow user to see what they collided with before proceeding to game over screen
