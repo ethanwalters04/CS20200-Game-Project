@@ -77,6 +77,9 @@ let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyCo
     | MainMenu, StartGame difficulty ->
         let difficultyConfig = difficultyConfigFor difficulty
         initGame config randNumGen difficultyConfig difficulty
+    | DeathFreeze (_, _, _, _, _, _, difficulty), RestartGame ->
+        let difficultyConfig = difficultyConfigFor difficulty
+        initGame config randNumGen difficultyConfig difficulty
     | DeathFreeze (_, _, _, score, delay, step, difficulty), SkipOrNext -> GameOver (score, delay, step, difficulty) // Manual death freeze skip - proceed to game over screen with keypress
     | DeathFreeze (_, _, _, score, delay, step, difficulty), Tick -> GameOver (score, delay, step, difficulty) // Auto death freeze timeout - proceed to game over
     | GameOver (_, delay, speedStep, difficulty), RestartGame ->
