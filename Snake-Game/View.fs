@@ -12,7 +12,16 @@ module private Theme =
     let specialGoodFoodColor = ConsoleColor.Yellow
     let badFoodColor = ConsoleColor.DarkRed
     let wallColor = ConsoleColor.Gray
-    
+
+    let splashScreenTitleColor = ConsoleColor.Green
+    let splashScreenSubtitleColor = ConsoleColor.Red
+
+    let mainMenuTitleColor = ConsoleColor.White
+    let mainMenuTextColor = ConsoleColor.DarkGray
+    let mainMenuEasyColor = ConsoleColor.DarkGreen
+    let mainMenuMediumColor = ConsoleColor.DarkYellow
+    let mainMenuHardColor = ConsoleColor.DarkRed
+
     // Characters
     let snakeHead = '$'
     let snakeBody = 'S'
@@ -86,28 +95,43 @@ let private wallCell (boardConfig: BoardConfig) position =
     | _ -> None
 
 let private drawSplashScreen () =
-    Console.Clear()
+    let originalForeground = Console.ForegroundColor
+
     printfn ""
-    printfn "~~~ Loading Snake... ~~~"
+    Console.ForegroundColor <- splashScreenTitleColor
+    printfn "  ____  _   _    _    _  _______ "
+    printfn " / ___|| \\ | |  / \\  | |/ / ____|"
+    printfn " \\___ \\|  \\| | / _ \\ | ' /|  _|  "
+    printfn "  ___) | |\\  |/ ___ \\| . \\| |___ "
+    printfn " |____/|_| \\_/_/   \\_\\_|\\_\\_____|"
+    Console.ForegroundColor <- splashScreenSubtitleColor
+    printfn "              By Ethan J Walters"
+    Console.ForegroundColor <- originalForeground
     printfn ""
 
 let private drawMainMenu () =
-    Console.Clear()
+    let originalForeground = Console.ForegroundColor
+
     printfn ""
+    Console.ForegroundColor <- mainMenuTitleColor
     printfn "~~~ Welcome to Snake! ~~~"
+    Console.ForegroundColor <- mainMenuTextColor
     printfn "Your goal is to eat the blueberries and bananas to grow as long as possible."
     printfn "Blueberries give 10 points, while bananas give 50 points and clear all bad food from the board!"
     printfn "Avoid the red bad food - it will end the game if you eat it!"
     printfn "Use WASD to change direction. Press 'Q' to quit."
     printfn ""
     printfn "Select difficulty by pressing 1, 2, or 3:"
+    Console.ForegroundColor <- mainMenuEasyColor
     printfn "1. Easy (slow movement)"
+    Console.ForegroundColor <- mainMenuMediumColor
     printfn "2. Medium (medium movement)"
+    Console.ForegroundColor <- mainMenuHardColor
     printfn "3. Hard (fast movement)"
+    Console.ForegroundColor <- originalForeground
     printfn ""
 
 let private drawGameOver finalScore =
-    Console.Clear()
     printfn ""
     printfn "~~~ Game Over! ~~~"
     printfn "Your final score: %d" finalScore
