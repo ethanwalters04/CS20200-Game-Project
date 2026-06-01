@@ -14,7 +14,8 @@ dotnet run
 
 ## Requirement Changes
 
-Changed from 'Launch into main menu' to 'Launch into splash screen', which then transitions to the main menu after a delay. I added this to make the game feel more polished and visually stimulating.
+1. Changed from 'Launch into main menu' to 'Launch into splash screen', which then transitions to the main menu after a delay. I added this to make the game feel more polished and visually stimulating.
+2. In the example scenario, I listed the 'normal good food' as being coloured red and the 'bad food' as being coloured purple, however I changed the 'normal good food' to blue and the 'bad food' to red as it's more intuitive.
 
 ## LLM Attribution
 
