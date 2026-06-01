@@ -13,12 +13,12 @@ let private createGameActor (config: GameConfig) (difficultyConfigFor: Difficult
 
             let timeout =
                 match state with
-                | Playing (snake, _, _, _, delay, _) -> 
+                | Playing (snake, _, _, _, delay, _, _) -> 
                     match snake.CurrentDir with
                     | Up | Down -> int (delay * 1.8) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
                     | Left | Right -> int delay
                 | SplashScreen -> 3000 // Splash screen delay placed here to allow optional early exit if user presses Enter immediately
-                | DeathFreeze (_, _, _, _, delay, _) -> 3000 // Death freeze delay placed here to allow user to see what they collided with before proceeding to game over screen
+                | DeathFreeze (_, _, _, _, delay, _, _) -> 3000 // Death freeze delay placed here to allow user to see what they collided with before proceeding to game over screen
                 | _ -> Timeout.Infinite
 
             let! msg = inbox.TryReceive(timeout) // Wait for a command or timeout for the next tick

@@ -49,9 +49,9 @@ type BadFood = {
 type GameState =
     | SplashScreen
     | MainMenu
-    | Playing of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: float * speedStep: float
-    | DeathFreeze of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: float * speedStep: float
-    | GameOver of finalScore: int * tickDelay: float * speedStep: float
+    | Playing of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: float * speedStep: float * difficulty: Difficulty
+    | DeathFreeze of snake: Snake * currentGoodFood: GoodFood * badFoods: BadFood list * score: int * tickDelay: float * speedStep: float * difficulty: Difficulty
+    | GameOver of finalScore: int * tickDelay: float * speedStep: float * difficulty: Difficulty
     | Quitting
 
 // This command type represents all possible inputs to the game logic

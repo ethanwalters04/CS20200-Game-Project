@@ -47,7 +47,7 @@ let private moveHead (pos: Position) (dir: Direction) =
     | Right -> { pos with X = pos.X + 1 }
 
 // Set up the initial game state
-let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig: DifficultyConfig) =
+let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig: DifficultyConfig) (difficulty: Difficulty) =
     let initSnake = {
         Head = { X = config.Board.Width / 2; Y = config.Board.Height / 2 } // Head in centre of board
         Body = [
@@ -65,14 +65,10 @@ let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig
             if isSpecial then Special initGoodFoodPos
             else Normal initGoodFoodPos
 
-        Playing (initSnake, initGoodFood, [], 0, difficultyConfig.StartDelay, difficultyConfig.SpeedStep) 
+        Playing (initSnake, initGoodFood, [], 0, difficultyConfig.StartDelay, difficultyConfig.SpeedStep, difficulty) 
 
     | None ->
-        GameOver (
-            0,
-            difficultyConfig.StartDelay,
-            difficultyConfig.SpeedStep
-        ) // Board full on initial spawn, e.g. if the playable area is too small, so end game immediately
+        GameOver (0, difficultyConfig.StartDelay, difficultyConfig.SpeedStep, difficulty) // Board full on initial spawn, e.g. if the playable area is too small, so end game immediately
 
 let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
@@ -80,18 +76,18 @@ let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyCo
     | SplashScreen, Tick -> MainMenu // Auto splash screen timeout - proceed to main menu
     | MainMenu, StartGame difficulty ->
         let difficultyConfig = difficultyConfigFor difficulty
-        initGame config randNumGen difficultyConfig
-    | DeathFreeze (_, _, _, score, delay, step), SkipOrNext -> GameOver (score, delay, step) // Manual death freeze skip - proceed to game over screen with keypress
-    | DeathFreeze (_, _, _, score, delay, step), Tick -> GameOver (score, delay, step) // Auto death freeze timeout - proceed to game over
-    | GameOver (_, delay, speedStep), RestartGame ->
-        let difficultyConfig = { StartDelay = delay; SpeedStep = speedStep }
-        initGame config randNumGen difficultyConfig
-    | GameOver (_, delay, speedStep), ReturnToMainMenu -> MainMenu
-    | Playing (_, _, _, _, delay, speedStep), ReturnToMainMenu -> MainMenu
+        initGame config randNumGen difficultyConfig difficulty
+    | DeathFreeze (_, _, _, score, delay, step, difficulty), SkipOrNext -> GameOver (score, delay, step, difficulty) // Manual death freeze skip - proceed to game over screen with keypress
+    | DeathFreeze (_, _, _, score, delay, step, difficulty), Tick -> GameOver (score, delay, step, difficulty) // Auto death freeze timeout - proceed to game over
+    | GameOver (_, delay, speedStep, difficulty), RestartGame ->
+        let difficultyConfig = difficultyConfigFor difficulty
+        initGame config randNumGen difficultyConfig difficulty
+    | GameOver (_, delay, speedStep, _), ReturnToMainMenu -> MainMenu
+    | Playing (_, _, _, _, delay, speedStep, _), ReturnToMainMenu -> MainMenu
     | _, QuitGame -> Quitting
 
     // Process direction change commands (when playing)
-    | Playing (snake, food, badFoods, score, delay, step), ChangeDir newDir ->
+    | Playing (snake, food, badFoods, score, delay, step, difficulty), ChangeDir newDir ->
         // Get actual direction rather than relying on the snake.CurrentDir, which may be inaccurate if the player makes multiple turn commands between ticks
         let actualDir = 
             match snake.Body with
@@ -105,17 +101,16 @@ let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyCo
         
         if isValidTurn actualDir newDir then
             let newSnake = { snake with CurrentDir = newDir }
-            Playing (newSnake, food, badFoods, score, delay, step)
+            Playing (newSnake, food, badFoods, score, delay, step, difficulty)
         else
             state // Invalid turn - ignore command and keep current state
     
-    | Playing (snake, food, badFoods, score, delay, step), Tick ->
+    | Playing (snake, food, badFoods, score, delay, step, difficulty), Tick ->
         let newHead = moveHead snake.Head snake.CurrentDir
-
         if isOutOfBounds config newHead 
             || List.exists (fun pos -> pos = newHead) snake.Body
             || List.exists (fun bf -> bf.Pos = newHead) badFoods then
-                DeathFreeze (snake, food, badFoods, score, delay, step)
+                DeathFreeze (snake, food, badFoods, score, delay, step, difficulty)
         else
             let goodFoodPos = match food with | Normal p -> p | Special p -> p
 
@@ -150,15 +145,15 @@ let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyCo
                     // There is space so spawn the food and continue playing
                     let isSpecial = randNumGen.Next(1, 101) <= 20
                     let newFood = if isSpecial then Special newGoodFoodPos else Normal newGoodFoodPos
-                    Playing (newSnake, newFood, newBadFoods, newScore, newDelay, step)
+                    Playing (newSnake, newFood, newBadFoods, newScore, newDelay, step, difficulty)
                     
                 | None ->
                     // Board full - must end game
-                    GameOver (newScore, newDelay, step)
+                    GameOver (newScore, newDelay, step, difficulty)
             else
                 let newBody = snake.Head :: (List.take (List.length snake.Body - 1) snake.Body)
                 let newSnake = { snake with Head = newHead; Body = newBody }
 
-                Playing (newSnake, food, badFoods, score, delay, step)
+                Playing (newSnake, food, badFoods, score, delay, step, difficulty)
     | _ -> state
                 

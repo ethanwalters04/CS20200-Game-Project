@@ -238,13 +238,13 @@ let private draw (boardConfig: BoardConfig) (state: GameState) =
     | MainMenu ->
         drawMainMenu ()
 
-    | GameOver (finalScore, _, _) ->
+    | GameOver (finalScore, _, _, _) ->
         drawGameOver finalScore
 
-    | DeathFreeze (snake, currentGoodFood, badFoods, score, _, _) ->
+    | DeathFreeze (snake, currentGoodFood, badFoods, score, _, _, _) ->
         drawPlaying boardConfig snake currentGoodFood badFoods score true
 
-    | Playing (snake, currentGoodFood, badFoods, score, _, _) ->
+    | Playing (snake, currentGoodFood, badFoods, score, _, _, _) ->
         drawPlaying boardConfig snake currentGoodFood badFoods score false
 
     | Quitting ->
