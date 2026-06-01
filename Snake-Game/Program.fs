@@ -69,9 +69,9 @@ let main _ =
         | Easy ->
             { StartDelay = 150.0; SpeedStep = 2.0 }
         | Medium ->
-            { StartDelay = 100.0; SpeedStep = 5.0 }
+            { StartDelay = 100.0; SpeedStep = 4.5 }
         | Hard ->
-            { StartDelay = 60.0; SpeedStep = 8.0 }
+            { StartDelay = 75.0; SpeedStep = 7.0 }
 
     let renderer = createConsoleRenderer config.Board
     let gameActor = createGameActor config difficultyConfig randNumGen renderer SplashScreen
