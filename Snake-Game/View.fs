@@ -8,9 +8,9 @@ module private Theme =
     let boardBackgroundColor = ConsoleColor.Black
     let snakeHeadColor = ConsoleColor.Green
     let snakeBodyColor = ConsoleColor.DarkGreen
-    let normalGoodFoodColor = ConsoleColor.Red
+    let normalGoodFoodColor = ConsoleColor.DarkBlue
     let specialGoodFoodColor = ConsoleColor.Yellow
-    let badFoodColor = ConsoleColor.DarkBlue
+    let badFoodColor = ConsoleColor.DarkRed
     let wallColor = ConsoleColor.Gray
     
     // Characters
@@ -86,9 +86,9 @@ let private drawMainMenu () =
     Console.Clear()
     printfn ""
     printfn "~~~ Welcome to Snake! ~~~"
-    printfn "Your goal is to eat the apples and bananas to grow as long as possible."
-    printfn "Apples give 10 points, while bananas give 50 points and clear all bad food from the board!"
-    printfn "Avoid the blue bad food - it will end the game if you eat it!"
+    printfn "Your goal is to eat the blueberries and bananas to grow as long as possible."
+    printfn "Blueberries give 10 points, while bananas give 50 points and clear all bad food from the board!"
+    printfn "Avoid the red bad food - it will end the game if you eat it!"
     printfn "Use WASD to change direction. Press 'Q' to quit."
     printfn ""
     printfn "Select difficulty by pressing 1, 2, or 3:"
