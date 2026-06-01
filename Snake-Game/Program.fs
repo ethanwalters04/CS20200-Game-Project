@@ -18,6 +18,7 @@ let private createGameActor (config: GameConfig) (difficultyConfigFor: Difficult
                     match snake.CurrentDir with
                     | Up | Down -> int (delay + (delay / 3.5)) // Characters aren't perfectly square, so vertical movement is slightly slower to feel more natural
                     | Left | Right -> int delay
+                | SplashScreen -> 3000 // Splash screen delay placed here to allow optional early exit if user presses Enter immediately
                 | _ -> Timeout.Infinite
 
             let! msg = inbox.TryReceive(timeout) // Wait for a command or timeout for the next tick
@@ -30,8 +31,8 @@ let private createGameActor (config: GameConfig) (difficultyConfigFor: Difficult
             let nextState = Engine.update config difficultyConfigFor randNumGen state command
 
             match state, nextState with
-            | MainMenu, Playing _ -> 
-                Console.Clear() // Clear console to get rid of stray text around game board
+            | SplashScreen, MainMenu -> Console.Clear()
+            | MainMenu, Playing _ -> Console.Clear()
             | Playing _, GameOver _ -> 
                 do! Async.Sleep(1500) // Extra delay on game over to allow user to process what happened
                 Console.Clear()
@@ -74,7 +75,7 @@ let main _ =
             { StartDelay = 60.0; SpeedStep = 8.0 }
 
     let renderer = createConsoleRenderer config.Board
-    let gameActor = createGameActor config difficultyConfig randNumGen renderer MainMenu
+    let gameActor = createGameActor config difficultyConfig randNumGen renderer SplashScreen
 
     let rec inputLoop () =
         match renderer.GetCommand() with

@@ -47,6 +47,9 @@ let private getCommand () : Command option =
         | ConsoleKey.M -> Some ReturnToMainMenu
         | ConsoleKey.R -> Some RestartGame
         | ConsoleKey.Q -> Some QuitGame
+
+        | ConsoleKey.Enter -> Some ProceedToMainMenu // For proceeding from splash screen
+
         | _ -> None
 
 let private printElement (c: char) (color: ConsoleColor) =
@@ -81,6 +84,12 @@ let private wallCell (boardConfig: BoardConfig) position =
     | { Y = y } when y = boardConfig.Height - 1 -> Some (wallHorizontal, wallColor)
 
     | _ -> None
+
+let private drawSplashScreen () =
+    Console.Clear()
+    printfn ""
+    printfn "~~~ Loading Snake... ~~~"
+    printfn ""
 
 let private drawMainMenu () =
     Console.Clear()
@@ -161,6 +170,9 @@ let private draw (boardConfig: BoardConfig) (state: GameState) =
     Console.SetCursorPosition(0, 0)
 
     match state with
+    | SplashScreen ->
+        drawSplashScreen ()
+
     | MainMenu ->
         drawMainMenu ()
 

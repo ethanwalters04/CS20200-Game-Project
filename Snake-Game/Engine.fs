@@ -83,6 +83,8 @@ let private initGame (config: GameConfig) (randNumGen: Random) (difficultyConfig
 
 let update (config: GameConfig) (difficultyConfigFor: Difficulty -> DifficultyConfig) (randNumGen: Random) (state: GameState) (cmd: Command) : GameState =
     match state, cmd with
+    | SplashScreen, ProceedToMainMenu -> MainMenu // Manual splash screen skip - proceed to main menu with keypress
+    | SplashScreen, Tick -> MainMenu // Auto splash screen timeout - proceed to main menu
     | MainMenu, StartGame difficulty ->
 
         let difficultyConfig =
